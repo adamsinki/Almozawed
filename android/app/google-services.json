@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872186367302",
+    "project_id": "almozawed",
+    "storage_bucket": "almozawed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872186367302:android:be762e4b6270d81e62a947",
+        "android_client_info": {
+          "package_name": "com.example.provisions_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsuXO02rPf3pJlXzBS3pkTfnKxybLjD8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
