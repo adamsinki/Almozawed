@@ -15,7 +15,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.7' # Match the pubspec.yaml environment
+          flutter-version: 'any'
           channel: 'stable'
 
       - name: Get dependencies
