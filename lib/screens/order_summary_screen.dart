@@ -115,40 +115,77 @@ class OrderSummaryScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.picture_as_pdf),
-                              label: const Text("Download PDF"),
-                              onPressed: () => _generatePdf(context, orderProvider, authProvider),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2C5364), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
-                              onPressed: () async {
-                                if (authProvider.currentUser != null) {
-                                  try {
-                                    await orderProvider.submitOrder(authProvider.currentUser!.uid);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order Submitted successfully!")));
-                                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainScreen()), (route) => route.isFirst);
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          bool isSmall = constraints.maxWidth < 500;
+                          return isSmall ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              OutlinedButton.icon(
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text("Download PDF"),
+                                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                                onPressed: () => _generatePdf(context, orderProvider, authProvider),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2C5364), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+                                onPressed: () async {
+                                  if (authProvider.currentUser != null) {
+                                    try {
+                                      await orderProvider.submitOrder(authProvider.currentUser!.uid);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order Submitted successfully!")));
+                                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainScreen()), (route) => route.isFirst);
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to submit order: $e"), backgroundColor: Colors.red));
+                                      }
                                     }
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to submit order: $e"), backgroundColor: Colors.red));
-                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You must be logged in to order")));
                                   }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You must be logged in to order")));
-                                }
-                              },
-                              child: const Text("Complete Order", style: TextStyle(fontSize: 18)),
-                            ),
-                          ),
-                        ],
+                                },
+                                child: const Text("Complete Order", style: TextStyle(fontSize: 18)),
+                              ),
+                            ],
+                          ) : Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  icon: const Icon(Icons.picture_as_pdf),
+                                  label: const Text("Download PDF"),
+                                  onPressed: () => _generatePdf(context, orderProvider, authProvider),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2C5364), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+                                  onPressed: () async {
+                                    if (authProvider.currentUser != null) {
+                                      try {
+                                        await orderProvider.submitOrder(authProvider.currentUser!.uid);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order Submitted successfully!")));
+                                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const MainScreen()), (route) => route.isFirst);
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to submit order: $e"), backgroundColor: Colors.red));
+                                        }
+                                      }
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You must be logged in to order")));
+                                    }
+                                  },
+                                  child: const Text("Complete Order", style: TextStyle(fontSize: 18)),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
                       )
                     ],
                   ),

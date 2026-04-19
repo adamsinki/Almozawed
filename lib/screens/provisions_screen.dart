@@ -46,16 +46,21 @@ class _ProvisionsScreenState extends State<ProvisionsScreen> {
             onPressed: () => localeProvider.toggleLanguage(),
             child: Text(localeProvider.isEnglish ? "عربي" : "EN", style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2C5364), foregroundColor: Colors.white),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderSummaryScreen()));
-              },
-              icon: const Icon(Icons.check),
-              label: Text(localeProvider.isEnglish ? "Complete Request" : "إتمام الطلب"),
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              bool isSmall = MediaQuery.of(context).size.width < 500;
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2C5364), foregroundColor: Colors.white),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderSummaryScreen()));
+                  },
+                  icon: const Icon(Icons.check),
+                  label: isSmall ? const Text("") : Text(localeProvider.isEnglish ? "Complete Request" : "إتمام الطلب"),
+                ),
+              );
+            }
           )
         ],
       ),
@@ -256,95 +261,173 @@ class _ProvisionsScreenState extends State<ProvisionsScreen> {
   Widget _buildProvisionLine(ProvisionItem item, LocaleProvider loc, OrderProvider prov) {
     int qty = prov.getQuantity(item);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
-      ),
-      child: Row(
-        children: [
-          // Minimalist Icon
-          const Icon(Icons.local_grocery_store, color: Colors.blueGrey, size: 20),
-          const SizedBox(width: 12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isMobile = constraints.maxWidth < 600;
 
-          // Name & Price Group (Stuck together on the left)
-          SizedBox(
-            width: 250,
+        if (isMobile) {
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  loc.isEnglish ? item.nameEn : item.nameAr,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
                 Row(
                   children: [
+                    const Icon(Icons.shopping_cart_outlined, color: Colors.blueGrey, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loc.isEnglish ? item.nameEn : item.nameAr,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                    ),
                     Text(
                       "\$${item.price.toStringAsFixed(2)}",
-                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     Text(
                       " / ${item.unit}",
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      height: 40,
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: loc.isEnglish ? "Qty" : "الكمية",
+                          contentPadding: EdgeInsets.zero,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                        controller: TextEditingController(text: qty > 0 ? qty.toString() : '')
+                          ..selection = TextSelection.fromPosition(TextPosition(offset: (qty > 0 ? qty.toString().length : 0))),
+                        onChanged: (val) {
+                          int newQty = int.tryParse(val) ?? 0;
+                          prov.updateQuantity(item, newQty);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 40,
+                        child: TextField(
+                          style: const TextStyle(fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: loc.isEnglish ? "Note..." : "ملاحظة...",
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                          ),
+                          onChanged: (val) {
+                            if (qty > 0) prov.updateNote(item, val);
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
           ),
-
-          const SizedBox(width: 8),
-
-          // Quantity Input (Small box)
-          SizedBox(
-            width: 60,
-            height: 35,
-            child: TextField(
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: loc.isEnglish ? "Qty" : "الكمية",
-                contentPadding: EdgeInsets.zero,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                filled: true,
-                fillColor: Colors.grey.shade50,
-              ),
-              controller: TextEditingController(text: qty > 0 ? qty.toString() : '')
-                ..selection = TextSelection.fromPosition(TextPosition(offset: (qty > 0 ? qty.toString().length : 0))),
-              onChanged: (val) {
-                int newQty = int.tryParse(val) ?? 0;
-                prov.updateQuantity(item, newQty);
-              },
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Note Input (Expanded to fill final space)
-          Expanded(
-            child: SizedBox(
-              height: 35,
-              child: TextField(
-                style: const TextStyle(fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: loc.isEnglish ? "Note..." : "ملاحظة...",
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
+          child: Row(
+            children: [
+              const Icon(Icons.local_grocery_store, color: Colors.blueGrey, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      loc.isEnglish ? item.nameEn : item.nameAr,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          "\$${item.price.toStringAsFixed(2)}",
+                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        Text(
+                          " / ${item.unit}",
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                onChanged: (val) {
-                  if (qty > 0) prov.updateNote(item, val);
-                },
               ),
-            ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 60,
+                height: 35,
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: loc.isEnglish ? "Qty" : "الكمية",
+                    contentPadding: EdgeInsets.zero,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                  ),
+                  controller: TextEditingController(text: qty > 0 ? qty.toString() : '')
+                    ..selection = TextSelection.fromPosition(TextPosition(offset: (qty > 0 ? qty.toString().length : 0))),
+                  onChanged: (val) {
+                    int newQty = int.tryParse(val) ?? 0;
+                    prov.updateQuantity(item, newQty);
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 35,
+                  child: TextField(
+                    style: const TextStyle(fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: loc.isEnglish ? "Note..." : "ملاحظة...",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                    ),
+                    onChanged: (val) {
+                      if (qty > 0) prov.updateNote(item, val);
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 }

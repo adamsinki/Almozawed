@@ -49,15 +49,17 @@ class _SparePartsScreenState extends State<SparePartsScreen> {
         return StatefulBuilder(builder: (ctx, setModalState) {
           return AlertDialog(
             title: const Text("New Spare Part Request"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: descCtrl,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: "Describe the part you need",
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: descCtrl,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: "Describe the part you need",
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -87,7 +89,8 @@ class _SparePartsScreenState extends State<SparePartsScreen> {
                       }
                     },
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
             actions: [

@@ -99,53 +99,99 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
 
           SafeArea(
-            child: Row(
-              children: [
-                // Left Panel: Company Info
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Almozawed",
-                          style: TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                bool isMobile = constraints.maxWidth < 800;
+
+                if (isMobile) {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Almozawed",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 2,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Your trusted partner in premium ship provisions, spare parts, and comprehensive maritime services.",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white70,
-                            height: 1.5,
+                          const SizedBox(height: 12),
+                          const Text(
+                            "Premium Ship Provisions & Services",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "Serving the global fleet with excellence.",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                          const SizedBox(height: 32),
+                          _buildAuthCard(authProvider, isMobile: true),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          // Left Panel: Company Info
+                          Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.all(40.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "Almozawed",
+                                    style: TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    "Your trusted partner in premium ship provisions, spare parts, and comprehensive maritime services.",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white70,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    "Serving the global fleet with excellence.",
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                      
+                          // Right Panel: Auth / Place Order Card
+                          Expanded(
+                            flex: 1,
+                            child: Center(child: _buildAuthCard(authProvider)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-
-                // Right Panel: Auth / Place Order Card
-                Expanded(
-                  flex: 1,
-                  child: Center(child: _buildAuthCard(authProvider)),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -153,11 +199,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildAuthCard(AuthProvider authProvider) {
+  Widget _buildAuthCard(AuthProvider authProvider, {bool isMobile = false}) {
     return Container(
       key: const ValueKey('auth_card'),
-      width: 400,
-      height: 600,
+      constraints: const BoxConstraints(maxWidth: 400),
+      height: isMobile ? null : 620,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -171,6 +217,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
@@ -183,44 +230,59 @@ class _DashboardScreenState extends State<DashboardScreen>
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildTextField("Email", emailCtrl, icon: Icons.email),
-                if (!isLoginState) ...[
-                  _buildTextField(
-                    "Ship Name",
-                    shipCtrl,
-                    icon: Icons.directions_boat,
-                  ),
-                  _buildTextField("IMO Number", imoCtrl, icon: Icons.numbers),
-                  _buildTextField(
-                    "Country of Origin",
-                    countryCtrl,
-                    icon: Icons.flag,
-                  ),
-                  _buildTextField(
-                    "WhatsApp Phone (Optional)",
-                    phoneCtrl,
-                    icon: Icons.phone,
-                  ),
-                ],
-                _buildTextField(
-                  "Password",
-                  passCtrl,
-                  obscure: true,
-                  icon: Icons.lock,
-                ),
-                if (!isLoginState)
-                  _buildTextField(
-                    "Confirm Password",
-                    pass2Ctrl,
-                    obscure: true,
-                    icon: Icons.lock_outline,
-                  ),
+          if (isMobile)
+            ...[
+              _buildTextField("Email", emailCtrl, icon: Icons.email),
+              if (!isLoginState) ...[
+                _buildTextField("Ship Name", shipCtrl, icon: Icons.directions_boat),
+                _buildTextField("IMO Number", imoCtrl, icon: Icons.numbers),
+                _buildTextField("Country of Origin", countryCtrl, icon: Icons.flag),
+                _buildTextField("WhatsApp Phone (Optional)", phoneCtrl, icon: Icons.phone),
               ],
+              _buildTextField("Password", passCtrl, obscure: true, icon: Icons.lock),
+              if (!isLoginState)
+                _buildTextField("Confirm Password", pass2Ctrl, obscure: true, icon: Icons.lock_outline),
+            ]
+          else
+            Expanded(
+              child: ListView(
+                physics: const NeverScrollableScrollPhysics(), // Card has fixed height on desktop
+                children: [
+                  _buildTextField("Email", emailCtrl, icon: Icons.email),
+                  if (!isLoginState) ...[
+                    _buildTextField(
+                      "Ship Name",
+                      shipCtrl,
+                      icon: Icons.directions_boat,
+                    ),
+                    _buildTextField("IMO Number", imoCtrl, icon: Icons.numbers),
+                    _buildTextField(
+                      "Country of Origin",
+                      countryCtrl,
+                      icon: Icons.flag,
+                    ),
+                    _buildTextField(
+                      "WhatsApp Phone (Optional)",
+                      phoneCtrl,
+                      icon: Icons.phone,
+                    ),
+                  ],
+                  _buildTextField(
+                    "Password",
+                    passCtrl,
+                    obscure: true,
+                    icon: Icons.lock,
+                  ),
+                  if (!isLoginState)
+                    _buildTextField(
+                      "Confirm Password",
+                      pass2Ctrl,
+                      obscure: true,
+                      icon: Icons.lock_outline,
+                    ),
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 20),
           if (authProvider.isLoading)
             const Center(child: CircularProgressIndicator())

@@ -39,8 +39,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 Expanded(child: Text(serviceType, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
               ],
             ),
-            content: SizedBox(
-              width: 400,
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.9),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,121 +164,124 @@ class _ServicesScreenState extends State<ServicesScreen> {
         foregroundColor: Colors.black87,
         elevation: 0,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 24),
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(24, 24, 24, 8),
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Text("Select a Service", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F2027))),
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text("Submit a service request and our team will get back to you.", style: TextStyle(color: Colors.grey)),
           ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 280,
-                childAspectRatio: 1.1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: _serviceTypes.length,
-              itemBuilder: (ctx, i) {
-                final svc = _serviceTypes[i];
-                final color = svc['color'] as Color;
-                return InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () => _showServiceDialog(context, userId, svc['type'], svc['icon'], color),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 15, offset: const Offset(0, 5))],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-                          child: Icon(svc['icon'] as IconData, size: 40, color: color),
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            svc['type'],
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F2027)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 280,
+              childAspectRatio: 1.1,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
             ),
-          ),
-          // Past requests section
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
-            child: Text("My Service Requests", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(
-            height: 200,
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('service_requests')
-                  .where('user_id', isEqualTo: userId)
-                  .orderBy('created_at', descending: true)
-                  .snapshots(),
-              builder: (ctx, snap) {
-                if (!snap.hasData || snap.data!.docs.isEmpty) {
-                  return const Center(child: Text("No service requests yet.", style: TextStyle(color: Colors.grey)));
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: snap.data!.docs.length,
-                  itemBuilder: (_, i) {
-                    final d = snap.data!.docs[i].data() as Map<String, dynamic>;
-                    final status = d['status'] ?? 'pending';
-                    final arrDate = d['arrival_date'] != null
-                        ? DateTime.tryParse(d['arrival_date'])
-                        : null;
-                    Color statusColor;
-                    switch (status) {
-                      case 'accepted': statusColor = Colors.green; break;
-                      case 'declined': statusColor = Colors.red; break;
-                      case 'complete': statusColor = Colors.blue; break;
-                      default: statusColor = Colors.orange;
-                    }
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(d['type'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(arrDate != null
-                            ? "Arrival: ${arrDate.day}/${arrDate.month}/${arrDate.year}"
-                            : ""),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: statusColor),
-                          ),
-                          child: Text(status.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11)),
+            itemCount: _serviceTypes.length,
+            itemBuilder: (ctx, i) {
+              final svc = _serviceTypes[i];
+              final color = svc['color'] as Color;
+              return InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _showServiceDialog(context, userId, svc['type'], svc['icon'], color),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 15, offset: const Offset(0, 5))],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        child: Icon(svc['icon'] as IconData, size: 40, color: color),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          svc['type'],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F2027)),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
+          // Past requests section
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Text("My Service Requests", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ),
+          StreamBuilder<QuerySnapshot>(
+            stream: _firestore
+                .collection('service_requests')
+                .where('user_id', isEqualTo: userId)
+                .orderBy('created_at', descending: true)
+                .snapshots(),
+            builder: (ctx, snap) {
+              if (!snap.hasData || snap.data!.docs.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Center(child: Text("No service requests yet.", style: TextStyle(color: Colors.grey))),
+                );
+              }
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: snap.data!.docs.length,
+                itemBuilder: (_, i) {
+                  final d = snap.data!.docs[i].data() as Map<String, dynamic>;
+                  final status = d['status'] ?? 'pending';
+                  final arrDate = d['arrival_date'] != null
+                      ? DateTime.tryParse(d['arrival_date'])
+                      : null;
+                  Color statusColor;
+                  switch (status) {
+                    case 'accepted': statusColor = Colors.green; break;
+                    case 'declined': statusColor = Colors.red; break;
+                    case 'complete': statusColor = Colors.blue; break;
+                    default: statusColor = Colors.orange;
+                  }
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      title: Text(d['type'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(arrDate != null
+                          ? "Arrival: ${arrDate.day}/${arrDate.month}/${arrDate.year}"
+                          : ""),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: statusColor),
+                        ),
+                        child: Text(status.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11)),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
