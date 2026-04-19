@@ -6,6 +6,11 @@ import 'package:intl/intl.dart';
 class PdfHelper {
   static Future<void> printOrder(Map<String, dynamic> data) async {
     final doc = pw.Document();
+    
+    // Load fonts for better character support (including Arabic)
+    final arabicFont = await PdfGoogleFonts.notoSansArabicRegular();
+    final baseFont = await PdfGoogleFonts.interRegular();
+    final boldFont = await PdfGoogleFonts.interBold();
 
     final dateStr = data['date'] ?? '';
     final formattedDate = dateStr.isNotEmpty 
@@ -21,6 +26,11 @@ class PdfHelper {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
+        theme: pw.ThemeData.withFont(
+          base: baseFont,
+          bold: boldFont,
+          fontFallback: [arabicFont],
+        ),
         build: (pw.Context context) {
           return [
             // Header
